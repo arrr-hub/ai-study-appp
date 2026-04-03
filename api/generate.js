@@ -7,7 +7,6 @@ const openai = new OpenAI({
 export default async function handler(req, res) {
   try {
     const { type, name, level, subjects, weakness, time, topic, questionDetail } = req.body;
-
     let prompt = "";
 
     if(type==="plan"){
@@ -30,7 +29,7 @@ Make it actionable and engaging.
     }
 
     if(type==="quiz"){
-      prompt = `Generate a short 5-question quiz (with answers) for the topic: ${topic || "general"} at student level ${level || "general"} .`;
+      prompt = `Generate a 5-question quiz with answers for the topic: ${topic || "general"} at student level ${level || "general"}.`;
     }
 
     if(type==="question"){
@@ -43,9 +42,8 @@ Make it actionable and engaging.
     });
 
     res.status(200).json({ text: completion.choices[0].message.content });
-
-  } catch(err) {
+  } catch(err){
     console.error(err);
-    res.status(500).json({ text: "Error generating response. Check your API key and deployment." });
+    res.status(500).json({ text: "Error generating response. Make sure OPENAI_API_KEY is set and redeploy the app." });
   }
 }
