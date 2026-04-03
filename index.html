@@ -17,14 +17,11 @@ body {
   background: white;
   padding: 25px;
   border-radius: 20px;
-  width: 350px;
+  width: 380px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
-h1 {
-  text-align: center;
-  color: #ff8fab;
-}
+h1 { text-align:center; color:#ff8fab; }
 
 input, button {
   width: 100%;
@@ -35,29 +32,29 @@ input, button {
 }
 
 button {
-  background: #ffb6c1;
-  font-weight: bold;
-  cursor: pointer;
-  transition: 0.2s;
+  background:#ffb6c1;
+  font-weight:bold;
+  cursor:pointer;
 }
 
-button:hover {
-  transform: scale(1.05);
+button:hover { transform: scale(1.05); }
+
+.section {
+  margin-top:15px;
 }
 
-#output {
-  background: #fff0f5;
-  padding: 10px;
-  border-radius: 10px;
-  margin-top: 10px;
+pre {
+  background:#fff0f5;
+  padding:10px;
+  border-radius:10px;
   white-space: pre-wrap;
 }
 
-.color-picker {
-  margin-top: 10px;
+canvas {
+  border:1px solid #eee;
+  border-radius:10px;
 }
 </style>
-
 </head>
 
 <body>
@@ -67,53 +64,129 @@ button:hover {
 <h1>AI Study Planner ✨</h1>
 
 <input id="name" placeholder="Your Name">
-<input id="goal" placeholder="Your Goal">
+<input id="level" placeholder="Your Year / Level">
 <input id="subjects" placeholder="Subjects">
+<input id="time" placeholder="Time Available">
+<input id="weakness" placeholder="Weakness">
 
-<div class="color-picker">
-<label>Pick your theme 💖</label>
+<label>Theme 💖</label>
 <input type="color" id="themeColor">
-</div>
 
 <button onclick="saveTheme()">Save Theme</button>
-<button onclick="generate()">Generate Plan</button>
+<button onclick="generatePlan()">Generate Study Plan</button>
 
-<div id="output"></div>
+<div class="section">
+<h3>📖 Study Plan</h3>
+<pre id="output"></pre>
+</div>
+
+<div class="section">
+<h3>📚 Free Resources</h3>
+<div id="resources"></div>
+</div>
+
+<div class="section">
+<h3>❓ Ask a Question</h3>
+<input id="questionBox" placeholder="Ask anything...">
+<button onclick="askQuestion()">Ask</button>
+<pre id="answer"></pre>
+</div>
+
+<div class="section">
+<h3>🧪 Mini Quiz</h3>
+<button onclick="generateQuiz()">Generate Quiz</button>
+<pre id="quiz"></pre>
+</div>
+
+<div class="section">
+<h3>🎨 Draw / Notes</h3>
+<canvas id="canvas" width="320" height="200"></canvas>
+</div>
+
+<div class="section">
+<button onclick="enableNotifications()">🔔 Enable Daily Reminder</button>
+</div>
 
 </div>
 
 <script>
-
-// THEME SAVE
+// THEME
 function saveTheme(){
-  const color = document.getElementById("themeColor").value;
-  document.body.style.background = color;
-  localStorage.setItem("theme", color);
+  const color=document.getElementById("themeColor").value;
+  document.body.style.background=color;
+  localStorage.setItem("theme",color);
 }
 
-// LOAD THEME
-window.onload = () => {
-  const saved = localStorage.getItem("theme");
-  if(saved){
-    document.body.style.background = saved;
-  }
+window.onload=()=>{
+  const saved=localStorage.getItem("theme");
+  if(saved) document.body.style.background=saved;
 }
 
-// GENERATE (still using simple backend)
-async function generate(){
-  const output = document.getElementById("output");
-  output.innerText = "Generating...";
+// DRAWING
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+let drawing=false;
 
-  const res = await fetch("/api/generate",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({type:"plan"})
-  });
+canvas.addEventListener("mousedown",()=>drawing=true);
+canvas.addEventListener("mouseup",()=>drawing=false);
+canvas.addEventListener("mousemove",(e)=>{
+ if(!drawing) return;
+ ctx.fillRect(e.offsetX,e.offsetY,3,3);
+});
 
-  const data = await res.json();
-  output.innerText = data.text;
+// STUDY PLAN
+async function generatePlan(){
+ const res=await fetch("/api/generate",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({
+    type:"plan",
+    level:document.getElementById("level").value,
+    subjects:document.getElementById("subjects").value,
+    weakness:document.getElementById("weakness").value,
+    time:document.getElementById("time").value
+  })
+ });
+
+ const data=await res.json();
+ document.getElementById("output").innerText=data.text;
+
+ document.getElementById("resources").innerText =
+ "Khan Academy | BBC Bitesize | Coursera | YouTube";
 }
 
+// QUESTIONS
+async function askQuestion(){
+ const q=document.getElementById("questionBox").value;
+
+ const res=await fetch("/api/generate",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({type:"question",q})
+ });
+
+ const data=await res.json();
+ document.getElementById("answer").innerText=data.text;
+}
+
+// QUIZ
+async function generateQuiz(){
+ const res=await fetch("/api/generate",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({type:"quiz"})
+ });
+
+ const data=await res.json();
+ document.getElementById("quiz").innerText=data.text;
+}
+
+// NOTIFICATIONS
+function enableNotifications(){
+ Notification.requestPermission().then(()=>{
+   new Notification("Time to study 📚");
+ });
+}
 </script>
 
 </body>
