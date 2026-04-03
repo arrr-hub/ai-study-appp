@@ -2,56 +2,79 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>AI Study Planner+</title>
+<title>AI Study OS</title>
 
 <style>
 body {
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg,#ffe4ec,#fff9db);
-  padding: 20px;
-  display: flex;
-  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  background: linear-gradient(135deg,#fdfbfb,#ebedee);
+  margin:0;
 }
 
-.container {
-  background: white;
-  padding: 25px;
-  border-radius: 20px;
-  width: 380px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+.app {
+  display:flex;
 }
 
-h1 { text-align:center; color:#ff8fab; }
-
-input, button {
-  width: 100%;
-  padding: 12px;
-  margin: 8px 0;
-  border-radius: 12px;
-  border: 1px solid #eee;
+/* SIDEBAR */
+.sidebar {
+  width:220px;
+  background:#111;
+  color:white;
+  height:100vh;
+  padding:20px;
 }
 
-button {
-  background:#ffb6c1;
-  font-weight:bold;
+.sidebar h2 { color:#ffb6c1; }
+
+.sidebar button {
+  width:100%;
+  margin:10px 0;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#222;
+  color:white;
   cursor:pointer;
 }
 
-button:hover { transform: scale(1.05); }
+/* MAIN */
+.main {
+  flex:1;
+  padding:20px;
+}
 
-.section {
-  margin-top:15px;
+.card {
+  background:white;
+  padding:20px;
+  border-radius:15px;
+  margin-bottom:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.05);
+}
+
+input {
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:10px;
+  border:1px solid #eee;
+}
+
+button.main-btn {
+  background:#ff8fab;
+  color:white;
+  border:none;
+  padding:10px;
+  border-radius:10px;
+  margin-top:10px;
 }
 
 pre {
-  background:#fff0f5;
-  padding:10px;
-  border-radius:10px;
   white-space: pre-wrap;
 }
 
+/* CANVAS */
 canvas {
-  border:1px solid #eee;
+  border:1px solid #ddd;
   border-radius:10px;
 }
 </style>
@@ -59,70 +82,98 @@ canvas {
 
 <body>
 
-<div class="container">
+<div class="app">
 
-<h1>AI Study Planner ✨</h1>
+<div class="sidebar">
+<h2>Study OS</h2>
+<button onclick="show('plan')">📖 Plan</button>
+<button onclick="show('quiz')">🧪 Quiz</button>
+<button onclick="show('ask')">❓ Ask</button>
+<button onclick="show('draw')">🎨 Draw</button>
+<button onclick="enableNotifications()">🔔 Reminder</button>
+</div>
 
-<input id="name" placeholder="Your Name">
-<input id="level" placeholder="Your Year / Level">
+<div class="main">
+
+<!-- PLAN -->
+<div id="plan" class="card">
+<h3>Smart Study Planner</h3>
+<input id="name" placeholder="Your name">
+<input id="level" placeholder="Year / Level">
 <input id="subjects" placeholder="Subjects">
-<input id="time" placeholder="Time Available">
 <input id="weakness" placeholder="Weakness">
+<input id="time" placeholder="Time available">
 
-<label>Theme 💖</label>
-<input type="color" id="themeColor">
+<button class="main-btn" onclick="generatePlan()">Generate Plan</button>
 
-<button onclick="saveTheme()">Save Theme</button>
-<button onclick="generatePlan()">Generate Study Plan</button>
-
-<div class="section">
-<h3>📖 Study Plan</h3>
 <pre id="output"></pre>
 </div>
 
-<div class="section">
-<h3>📚 Free Resources</h3>
-<div id="resources"></div>
+<!-- QUIZ -->
+<div id="quiz" class="card" style="display:none;">
+<h3>AI Quiz</h3>
+<button class="main-btn" onclick="generateQuiz()">Generate Quiz</button>
+<pre id="quizOutput"></pre>
 </div>
 
-<div class="section">
-<h3>❓ Ask a Question</h3>
-<input id="questionBox" placeholder="Ask anything...">
-<button onclick="askQuestion()">Ask</button>
+<!-- ASK -->
+<div id="ask" class="card" style="display:none;">
+<h3>Ask Anything</h3>
+<input id="questionBox">
+<button class="main-btn" onclick="askQuestion()">Ask</button>
 <pre id="answer"></pre>
 </div>
 
-<div class="section">
-<h3>🧪 Mini Quiz</h3>
-<button onclick="generateQuiz()">Generate Quiz</button>
-<pre id="quiz"></pre>
+<!-- DRAW -->
+<div id="draw" class="card" style="display:none;">
+<h3>Draw / Brainstorm</h3>
+<canvas id="canvas" width="400" height="250"></canvas>
 </div>
 
-<div class="section">
-<h3>🎨 Draw / Notes</h3>
-<canvas id="canvas" width="320" height="200"></canvas>
 </div>
-
-<div class="section">
-<button onclick="enableNotifications()">🔔 Enable Daily Reminder</button>
-</div>
-
 </div>
 
 <script>
-// THEME
-function saveTheme(){
-  const color=document.getElementById("themeColor").value;
-  document.body.style.background=color;
-  localStorage.setItem("theme",color);
+
+// NAVIGATION
+function show(section){
+ document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+ document.getElementById(section).style.display="block";
 }
 
-window.onload=()=>{
-  const saved=localStorage.getItem("theme");
-  if(saved) document.body.style.background=saved;
+// AI CALLS
+async function generatePlan(){
+ const res = await fetch("/api/generate",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({
+    type:"plan",
+    name:document.getElementById("name").value,
+    level:document.getElementById("level").value,
+    subjects:document.getElementById("subjects").value,
+    weakness:document.getElementById("weakness").value,
+    time:document.getElementById("time").value
+  })
+ });
+
+ const data = await res.json();
+ document.getElementById("output").innerText = data.text;
 }
 
-// DRAWING
+async function generateQuiz(){
+ const res = await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"quiz"})});
+ const data = await res.json();
+ document.getElementById("quizOutput").innerText = data.text;
+}
+
+async function askQuestion(){
+ const q=document.getElementById("questionBox").value;
+ const res = await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"question",q})});
+ const data = await res.json();
+ document.getElementById("answer").innerText = data.text;
+}
+
+// DRAW
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 let drawing=false;
@@ -134,57 +185,10 @@ canvas.addEventListener("mousemove",(e)=>{
  ctx.fillRect(e.offsetX,e.offsetY,3,3);
 });
 
-// STUDY PLAN
-async function generatePlan(){
- const res=await fetch("/api/generate",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({
-    type:"plan",
-    level:document.getElementById("level").value,
-    subjects:document.getElementById("subjects").value,
-    weakness:document.getElementById("weakness").value,
-    time:document.getElementById("time").value
-  })
- });
-
- const data=await res.json();
- document.getElementById("output").innerText=data.text;
-
- document.getElementById("resources").innerText =
- "Khan Academy | BBC Bitesize | Coursera | YouTube";
-}
-
-// QUESTIONS
-async function askQuestion(){
- const q=document.getElementById("questionBox").value;
-
- const res=await fetch("/api/generate",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({type:"question",q})
- });
-
- const data=await res.json();
- document.getElementById("answer").innerText=data.text;
-}
-
-// QUIZ
-async function generateQuiz(){
- const res=await fetch("/api/generate",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({type:"quiz"})
- });
-
- const data=await res.json();
- document.getElementById("quiz").innerText=data.text;
-}
-
 // NOTIFICATIONS
 function enableNotifications(){
  Notification.requestPermission().then(()=>{
-   new Notification("Time to study 📚");
+  new Notification("Time to study 📚");
  });
 }
 </script>
