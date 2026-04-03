@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AI Study Planner+</title>
+
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg,#ffe4ec,#fff9db);
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  width: 350px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #ff8fab;
+}
+
+input, button {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 12px;
+  border: 1px solid #eee;
+}
+
+button {
+  background: #ffb6c1;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: scale(1.05);
+}
+
+#output {
+  background: #fff0f5;
+  padding: 10px;
+  border-radius: 10px;
+  margin-top: 10px;
+  white-space: pre-wrap;
+}
+
+.color-picker {
+  margin-top: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>AI Study Planner ✨</h1>
+
+<input id="name" placeholder="Your Name">
+<input id="goal" placeholder="Your Goal">
+<input id="subjects" placeholder="Subjects">
+
+<div class="color-picker">
+<label>Pick your theme 💖</label>
+<input type="color" id="themeColor">
+</div>
+
+<button onclick="saveTheme()">Save Theme</button>
+<button onclick="generate()">Generate Plan</button>
+
+<div id="output"></div>
+
+</div>
+
+<script>
+
+// THEME SAVE
+function saveTheme(){
+  const color = document.getElementById("themeColor").value;
+  document.body.style.background = color;
+  localStorage.setItem("theme", color);
+}
+
+// LOAD THEME
+window.onload = () => {
+  const saved = localStorage.getItem("theme");
+  if(saved){
+    document.body.style.background = saved;
+  }
+}
+
+// GENERATE (still using simple backend)
+async function generate(){
+  const output = document.getElementById("output");
+  output.innerText = "Generating...";
+
+  const res = await fetch("/api/generate",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({type:"plan"})
+  });
+
+  const data = await res.json();
+  output.innerText = data.text;
+}
+
+</script>
+
+</body>
+</html>
