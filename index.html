@@ -4,25 +4,18 @@
 <meta charset="UTF-8">
 <title>AI Study OS</title>
 <style>
-/* General */
 body { font-family:'Inter',sans-serif; margin:0; background:linear-gradient(135deg,#fdfbfb,#ebedee);}
 .app {display:flex; height:100vh;}
-
-/* Sidebar */
 .sidebar { width:220px; background:#111; color:white; padding:20px; }
 .sidebar h2 { color:#ffb6c1; }
 .sidebar button { width:100%; margin:10px 0; padding:10px; border:none; border-radius:8px; background:#222; color:white; cursor:pointer; transition:0.2s;}
 .sidebar button:hover { background:#333; }
-
-/* Main content */
 .main { flex:1; padding:20px; overflow-y:auto; }
 .card { background:white; padding:20px; border-radius:15px; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); }
 input { width:100%; padding:10px; margin:5px 0; border-radius:10px; border:1px solid #eee; }
 button.main-btn { background:#ff8fab; color:white; border:none; padding:10px; border-radius:10px; margin-top:10px; cursor:pointer; transition:0.2s;}
 button.main-btn:hover { transform:scale(1.05); }
 pre { white-space: pre-wrap; background:#fff0f5; padding:10px; border-radius:10px; }
-
-/* Canvas */
 canvas { border:1px solid #ddd; border-radius:10px; margin-top:10px; }
 </style>
 </head>
@@ -30,7 +23,6 @@ canvas { border:1px solid #ddd; border-radius:10px; margin-top:10px; }
 
 <div class="app">
 
-  <!-- Sidebar -->
   <div class="sidebar">
     <h2>Study OS</h2>
     <button onclick="show('plan')">📖 Study Plan</button>
@@ -43,10 +35,7 @@ canvas { border:1px solid #ddd; border-radius:10px; margin-top:10px; }
     <button class="main-btn" onclick="saveTheme()">Save Theme</button>
   </div>
 
-  <!-- Main -->
   <div class="main">
-    
-    <!-- Study Plan -->
     <div id="plan" class="card">
       <h3>Personalized Study Plan</h3>
       <input id="name" placeholder="Your Name">
@@ -60,7 +49,6 @@ canvas { border:1px solid #ddd; border-radius:10px; margin-top:10px; }
       <div id="resources"></div>
     </div>
 
-    <!-- Quiz -->
     <div id="quiz" class="card" style="display:none;">
       <h3>Mini Quiz</h3>
       <input id="quizTopic" placeholder="Topic for Quiz">
@@ -68,7 +56,6 @@ canvas { border:1px solid #ddd; border-radius:10px; margin-top:10px; }
       <pre id="quizOutput"></pre>
     </div>
 
-    <!-- Ask Tutor -->
     <div id="ask" class="card" style="display:none;">
       <h3>Ask Your Tutor</h3>
       <input id="questionBox" placeholder="Type your question here...">
@@ -76,24 +63,20 @@ canvas { border:1px solid #ddd; border-radius:10px; margin-top:10px; }
       <pre id="answer"></pre>
     </div>
 
-    <!-- Draw -->
     <div id="draw" class="card" style="display:none;">
       <h3>Draw / Brainstorm</h3>
       <canvas id="canvas" width="400" height="250"></canvas>
     </div>
 
   </div>
-
 </div>
 
 <script>
-// Navigation
 function show(section){
   document.querySelectorAll(".card").forEach(c=>c.style.display="none");
   document.getElementById(section).style.display="block";
 }
 
-// Theme
 function saveTheme(){
   const color=document.getElementById("themeColor").value;
   document.body.style.background=color;
@@ -105,7 +88,6 @@ window.onload=()=>{
   if(saved) document.body.style.background=saved;
 }
 
-// Drawing
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 let drawing=false;
@@ -116,14 +98,12 @@ canvas.addEventListener("mousemove",(e)=>{
   ctx.fillRect(e.offsetX,e.offsetY,3,3);
 });
 
-// Notifications
 function enableNotifications(){
   Notification.requestPermission().then(()=>{
     new Notification("Time to study! 📚");
   });
 }
 
-// AI API Calls
 async function generatePlan(){
   const res=await fetch("/api/generate",{
     method:"POST",
@@ -165,6 +145,5 @@ async function askQuestion(){
   document.getElementById("answer").innerText=data.text;
 }
 </script>
-
 </body>
 </html>
