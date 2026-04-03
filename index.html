@@ -3,195 +3,168 @@
 <head>
 <meta charset="UTF-8">
 <title>AI Study OS</title>
-
 <style>
-body {
-  font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg,#fdfbfb,#ebedee);
-  margin:0;
-}
+/* General */
+body { font-family:'Inter',sans-serif; margin:0; background:linear-gradient(135deg,#fdfbfb,#ebedee);}
+.app {display:flex; height:100vh;}
 
-.app {
-  display:flex;
-}
-
-/* SIDEBAR */
-.sidebar {
-  width:220px;
-  background:#111;
-  color:white;
-  height:100vh;
-  padding:20px;
-}
-
+/* Sidebar */
+.sidebar { width:220px; background:#111; color:white; padding:20px; }
 .sidebar h2 { color:#ffb6c1; }
+.sidebar button { width:100%; margin:10px 0; padding:10px; border:none; border-radius:8px; background:#222; color:white; cursor:pointer; transition:0.2s;}
+.sidebar button:hover { background:#333; }
 
-.sidebar button {
-  width:100%;
-  margin:10px 0;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#222;
-  color:white;
-  cursor:pointer;
-}
+/* Main content */
+.main { flex:1; padding:20px; overflow-y:auto; }
+.card { background:white; padding:20px; border-radius:15px; margin-bottom:20px; box-shadow:0 10px 30px rgba(0,0,0,0.05); }
+input { width:100%; padding:10px; margin:5px 0; border-radius:10px; border:1px solid #eee; }
+button.main-btn { background:#ff8fab; color:white; border:none; padding:10px; border-radius:10px; margin-top:10px; cursor:pointer; transition:0.2s;}
+button.main-btn:hover { transform:scale(1.05); }
+pre { white-space: pre-wrap; background:#fff0f5; padding:10px; border-radius:10px; }
 
-/* MAIN */
-.main {
-  flex:1;
-  padding:20px;
-}
-
-.card {
-  background:white;
-  padding:20px;
-  border-radius:15px;
-  margin-bottom:20px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.05);
-}
-
-input {
-  width:100%;
-  padding:10px;
-  margin:5px 0;
-  border-radius:10px;
-  border:1px solid #eee;
-}
-
-button.main-btn {
-  background:#ff8fab;
-  color:white;
-  border:none;
-  padding:10px;
-  border-radius:10px;
-  margin-top:10px;
-}
-
-pre {
-  white-space: pre-wrap;
-}
-
-/* CANVAS */
-canvas {
-  border:1px solid #ddd;
-  border-radius:10px;
-}
+/* Canvas */
+canvas { border:1px solid #ddd; border-radius:10px; margin-top:10px; }
 </style>
 </head>
-
 <body>
 
 <div class="app">
 
-<div class="sidebar">
-<h2>Study OS</h2>
-<button onclick="show('plan')">📖 Plan</button>
-<button onclick="show('quiz')">🧪 Quiz</button>
-<button onclick="show('ask')">❓ Ask</button>
-<button onclick="show('draw')">🎨 Draw</button>
-<button onclick="enableNotifications()">🔔 Reminder</button>
-</div>
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Study OS</h2>
+    <button onclick="show('plan')">📖 Study Plan</button>
+    <button onclick="show('quiz')">🧪 Mini Quiz</button>
+    <button onclick="show('ask')">❓ Ask Tutor</button>
+    <button onclick="show('draw')">🎨 Draw / Notes</button>
+    <button onclick="enableNotifications()">🔔 Daily Reminder</button>
+    <label style="margin-top:10px;">Theme 💖</label>
+    <input type="color" id="themeColor">
+    <button class="main-btn" onclick="saveTheme()">Save Theme</button>
+  </div>
 
-<div class="main">
+  <!-- Main -->
+  <div class="main">
+    
+    <!-- Study Plan -->
+    <div id="plan" class="card">
+      <h3>Personalized Study Plan</h3>
+      <input id="name" placeholder="Your Name">
+      <input id="level" placeholder="Your Year / Level">
+      <input id="subjects" placeholder="Subjects (comma-separated)">
+      <input id="weakness" placeholder="Your Weakness">
+      <input id="time" placeholder="Time Available (e.g., 3 hours/day)">
+      <input id="topic" placeholder="Specific Topic You Want to Study">
+      <button class="main-btn" onclick="generatePlan()">Generate Plan</button>
+      <pre id="output"></pre>
+      <div id="resources"></div>
+    </div>
 
-<!-- PLAN -->
-<div id="plan" class="card">
-<h3>Smart Study Planner</h3>
-<input id="name" placeholder="Your name">
-<input id="level" placeholder="Year / Level">
-<input id="subjects" placeholder="Subjects">
-<input id="weakness" placeholder="Weakness">
-<input id="time" placeholder="Time available">
+    <!-- Quiz -->
+    <div id="quiz" class="card" style="display:none;">
+      <h3>Mini Quiz</h3>
+      <input id="quizTopic" placeholder="Topic for Quiz">
+      <button class="main-btn" onclick="generateQuiz()">Generate Quiz</button>
+      <pre id="quizOutput"></pre>
+    </div>
 
-<button class="main-btn" onclick="generatePlan()">Generate Plan</button>
+    <!-- Ask Tutor -->
+    <div id="ask" class="card" style="display:none;">
+      <h3>Ask Your Tutor</h3>
+      <input id="questionBox" placeholder="Type your question here...">
+      <button class="main-btn" onclick="askQuestion()">Ask</button>
+      <pre id="answer"></pre>
+    </div>
 
-<pre id="output"></pre>
-</div>
+    <!-- Draw -->
+    <div id="draw" class="card" style="display:none;">
+      <h3>Draw / Brainstorm</h3>
+      <canvas id="canvas" width="400" height="250"></canvas>
+    </div>
 
-<!-- QUIZ -->
-<div id="quiz" class="card" style="display:none;">
-<h3>AI Quiz</h3>
-<button class="main-btn" onclick="generateQuiz()">Generate Quiz</button>
-<pre id="quizOutput"></pre>
-</div>
+  </div>
 
-<!-- ASK -->
-<div id="ask" class="card" style="display:none;">
-<h3>Ask Anything</h3>
-<input id="questionBox">
-<button class="main-btn" onclick="askQuestion()">Ask</button>
-<pre id="answer"></pre>
-</div>
-
-<!-- DRAW -->
-<div id="draw" class="card" style="display:none;">
-<h3>Draw / Brainstorm</h3>
-<canvas id="canvas" width="400" height="250"></canvas>
-</div>
-
-</div>
 </div>
 
 <script>
-
-// NAVIGATION
+// Navigation
 function show(section){
- document.querySelectorAll(".card").forEach(c=>c.style.display="none");
- document.getElementById(section).style.display="block";
+  document.querySelectorAll(".card").forEach(c=>c.style.display="none");
+  document.getElementById(section).style.display="block";
 }
 
-// AI CALLS
-async function generatePlan(){
- const res = await fetch("/api/generate",{
-  method:"POST",
-  headers:{"Content-Type":"application/json"},
-  body:JSON.stringify({
-    type:"plan",
-    name:document.getElementById("name").value,
-    level:document.getElementById("level").value,
-    subjects:document.getElementById("subjects").value,
-    weakness:document.getElementById("weakness").value,
-    time:document.getElementById("time").value
-  })
- });
-
- const data = await res.json();
- document.getElementById("output").innerText = data.text;
+// Theme
+function saveTheme(){
+  const color=document.getElementById("themeColor").value;
+  document.body.style.background=color;
+  localStorage.setItem("theme",color);
 }
 
-async function generateQuiz(){
- const res = await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"quiz"})});
- const data = await res.json();
- document.getElementById("quizOutput").innerText = data.text;
+window.onload=()=>{
+  const saved=localStorage.getItem("theme");
+  if(saved) document.body.style.background=saved;
 }
 
-async function askQuestion(){
- const q=document.getElementById("questionBox").value;
- const res = await fetch("/api/generate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({type:"question",q})});
- const data = await res.json();
- document.getElementById("answer").innerText = data.text;
-}
-
-// DRAW
+// Drawing
 const canvas=document.getElementById("canvas");
 const ctx=canvas.getContext("2d");
 let drawing=false;
-
 canvas.addEventListener("mousedown",()=>drawing=true);
 canvas.addEventListener("mouseup",()=>drawing=false);
 canvas.addEventListener("mousemove",(e)=>{
- if(!drawing) return;
- ctx.fillRect(e.offsetX,e.offsetY,3,3);
+  if(!drawing) return;
+  ctx.fillRect(e.offsetX,e.offsetY,3,3);
 });
 
-// NOTIFICATIONS
+// Notifications
 function enableNotifications(){
- Notification.requestPermission().then(()=>{
-  new Notification("Time to study 📚");
- });
+  Notification.requestPermission().then(()=>{
+    new Notification("Time to study! 📚");
+  });
+}
+
+// AI API Calls
+async function generatePlan(){
+  const res=await fetch("/api/generate",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      type:"plan",
+      name:document.getElementById("name").value,
+      level:document.getElementById("level").value,
+      subjects:document.getElementById("subjects").value,
+      weakness:document.getElementById("weakness").value,
+      time:document.getElementById("time").value,
+      topic:document.getElementById("topic").value
+    })
+  });
+  const data=await res.json();
+  document.getElementById("output").innerText=data.text;
+  document.getElementById("resources").innerText="Suggested Resources: Khan Academy | BBC Bitesize | Coursera | YouTube";
+}
+
+async function generateQuiz(){
+  const topic=document.getElementById("quizTopic").value;
+  const res=await fetch("/api/generate",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({type:"quiz", topic})
+  });
+  const data=await res.json();
+  document.getElementById("quizOutput").innerText=data.text;
+}
+
+async function askQuestion(){
+  const q=document.getElementById("questionBox").value;
+  const res=await fetch("/api/generate",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({type:"question", questionDetail:q})
+  });
+  const data=await res.json();
+  document.getElementById("answer").innerText=data.text;
 }
 </script>
 
 </body>
-</html><input id="topic" placeholder="Specific topic to study">
+</html>
