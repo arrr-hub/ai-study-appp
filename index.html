@@ -2,35 +2,57 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>StudyLingo</title>
+<title>StudyBee 🐝</title>
 
 <style>
 body {
-  font-family: Arial, sans-serif;
-  background: #58cc02;
   margin:0;
-  color:white;
+  font-family: 'Arial Rounded MT Bold', sans-serif;
+  background: #fff9db;
+  color:#333;
   text-align:center;
 }
 
 /* HEADER */
 .header {
   padding:20px;
-  font-size:24px;
+}
+
+.title {
+  font-size:28px;
   font-weight:bold;
+}
+
+.subtitle {
+  font-size:14px;
+  color:#777;
+}
+
+/* MASCOT */
+.mascot {
+  font-size:60px;
+  margin:10px;
 }
 
 /* STATS */
 .stats {
   display:flex;
-  justify-content:space-around;
-  margin-bottom:20px;
+  justify-content:center;
+  gap:20px;
+  margin:20px;
 }
 
 .stat {
-  background:#46a302;
+  background:white;
   padding:10px 20px;
   border-radius:20px;
+  box-shadow:0 3px 0 #eee;
+}
+
+/* SECTION TITLE */
+.section-title {
+  font-size:20px;
+  margin:20px 0 10px;
 }
 
 /* PATH */
@@ -38,79 +60,96 @@ body {
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:20px;
+  gap:25px;
+  margin-bottom:100px;
 }
 
-/* LESSON BUTTONS */
+/* LESSON BUTTON */
 .lesson {
-  width:80px;
-  height:80px;
+  width:90px;
+  height:90px;
   border-radius:50%;
-  background:#89e219;
+  background:#ffe066;
   display:flex;
   align-items:center;
   justify-content:center;
-  font-size:24px;
+  font-size:30px;
   cursor:pointer;
-  box-shadow:0 5px 0 #4caf00;
+  box-shadow:0 6px 0 #e6c200;
   transition:0.1s;
 }
 
 .lesson:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
 }
 
 .lesson.locked {
-  background:#ccc;
+  background:#ddd;
   box-shadow:none;
-  cursor:not-allowed;
 }
 
-/* QUIZ POPUP */
+/* POPUP */
 .popup {
   position:fixed;
   bottom:0;
   left:0;
   right:0;
   background:white;
-  color:black;
+  border-top-left-radius:25px;
+  border-top-right-radius:25px;
   padding:20px;
-  border-top-left-radius:20px;
-  border-top-right-radius:20px;
   display:none;
+  box-shadow:0 -5px 20px rgba(0,0,0,0.1);
 }
 
 button {
-  padding:10px;
-  border:none;
-  border-radius:10px;
-  background:#58cc02;
-  color:white;
   margin-top:10px;
+  padding:12px;
+  border:none;
+  border-radius:15px;
+  background:#ffd43b;
+  font-weight:bold;
   cursor:pointer;
+}
+
+input {
+  width:90%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  margin-top:10px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="header">📚 StudyLingo</div>
+<div class="header">
+  <div class="title">StudyBee 🐝</div>
+  <div class="subtitle">Learn anything. One step at a time.</div>
+
+  <div class="mascot">🐶🐝</div>
+</div>
 
 <div class="stats">
   <div class="stat">🔥 <span id="streak">1</span></div>
   <div class="stat">⭐ <span id="xp">0</span> XP</div>
 </div>
 
+<div class="section-title">📚 Your Learning Path</div>
+
 <div class="path">
   <div class="lesson" onclick="startLesson('Math')">➕</div>
+  <div class="lesson locked">🔒</div>
   <div class="lesson locked">🔒</div>
   <div class="lesson locked">🔒</div>
 </div>
 
 <!-- POPUP -->
 <div class="popup" id="popup">
-  <h3 id="question">Loading...</h3>
-  <input id="answer" placeholder="Your answer">
+  <h2>Lesson</h2>
+  <p id="question">Loading...</p>
+  <input id="answer" placeholder="Type your answer">
   <button onclick="submitAnswer()">Submit</button>
 </div>
 
@@ -120,8 +159,6 @@ let streak = localStorage.getItem("streak") || 1;
 
 document.getElementById("xp").innerText = xp;
 document.getElementById("streak").innerText = streak;
-
-let correctAnswer = "";
 
 // START LESSON
 async function startLesson(subject){
@@ -133,16 +170,13 @@ async function startLesson(subject){
     body: JSON.stringify({
       level:"student",
       topics: subject,
-      questions:"Create ONE simple quiz question with answer"
+      questions:"Create 1 short question and clearly state the answer separately"
     })
   });
 
   const data = await res.json();
 
   document.getElementById("question").innerText = data.plan;
-
-  // (simple hack: answer not extracted yet)
-  correctAnswer = ""; 
 }
 
 // SUBMIT
