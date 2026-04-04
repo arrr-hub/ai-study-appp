@@ -2,79 +2,95 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>StudyOS Pro</title>
+<title>StudyOS</title>
+
+<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
 body {
   margin:0;
-  font-family: -apple-system, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #f5f5f7;
   display:flex;
-  height:100vh;
-  background: linear-gradient(135deg,#ffe4e1,#fffacd);
 }
 
-/* SIDEBAR */
+/* Sidebar */
 .sidebar {
   width:220px;
-  background:#111;
-  color:white;
+  height:100vh;
+  background:#ffffff;
+  border-right:1px solid #eee;
   padding:20px;
 }
-.sidebar h2 { color:#ff69b4; }
-.sidebar button {
-  width:100%;
-  margin:10px 0;
+
+.sidebar h2 {
+  font-weight:600;
+}
+
+.nav {
+  margin-top:20px;
+}
+
+.nav div {
   padding:10px;
-  background:#222;
-  border:none;
-  color:white;
   border-radius:10px;
   cursor:pointer;
+  transition:0.2s;
 }
 
-/* MAIN */
+.nav div:hover {
+  background:#f2f2f2;
+}
+
+/* Main */
 .main {
   flex:1;
-  padding:20px;
-  overflow:auto;
+  padding:40px;
 }
 
+/* Cards */
 .card {
-  background: rgba(255,255,255,0.8);
-  backdrop-filter: blur(10px);
-  padding:20px;
+  background:white;
   border-radius:20px;
+  padding:25px;
   margin-bottom:20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  transition:0.2s;
 }
 
+.card:hover {
+  transform: translateY(-2px);
+}
+
+/* Inputs */
 input, textarea {
   width:100%;
-  padding:10px;
+  padding:12px;
   margin-top:10px;
-  border-radius:10px;
+  border-radius:12px;
   border:1px solid #ddd;
 }
 
-button.main-btn {
-  background:#ff69b4;
-  color:white;
+/* Buttons */
+button {
+  margin-top:15px;
+  padding:12px;
   border:none;
-  padding:10px;
-  border-radius:10px;
-  margin-top:10px;
+  border-radius:12px;
+  background:#0071e3;
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
 }
 
-/* PROGRESS */
-.progress-bar {
-  height:10px;
-  background:#eee;
-  border-radius:10px;
-  overflow:hidden;
+button:hover {
+  opacity:0.9;
 }
-.progress-fill {
-  height:100%;
-  background:#ff69b4;
-  width:0%;
+
+/* Output */
+pre {
+  margin-top:15px;
+  white-space: pre-wrap;
 }
 </style>
 </head>
@@ -83,54 +99,45 @@ button.main-btn {
 
 <div class="sidebar">
   <h2>StudyOS</h2>
-  <button onclick="show('dashboard')">🏠 Dashboard</button>
-  <button onclick="show('plan')">📚 Study Plan</button>
-  <button onclick="show('workspace')">🧠 Brainstorm</button>
-  <button onclick="show('quiz')">🧪 Quiz</button>
+
+  <div class="nav">
+    <div onclick="show('dashboard')">Dashboard</div>
+    <div onclick="show('plan')">Study Plan</div>
+    <div onclick="show('workspace')">Brainstorm</div>
+    <div onclick="show('quiz')">Quiz</div>
+  </div>
 </div>
 
 <div class="main">
 
-  <!-- DASHBOARD -->
   <div id="dashboard" class="card">
-    <h2>🎯 Today's Mission</h2>
-    <p id="mission">Stay consistent. Small wins daily.</p>
-
-    <h3>🔥 Streak: <span id="streak">1</span> days</h3>
-
-    <div class="progress-bar">
-      <div id="progress" class="progress-fill"></div>
-    </div>
-
-    <button class="main-btn" onclick="completeTask()">Mark Task Done</button>
+    <h2>Welcome back</h2>
+    <p>Stay consistent. Small progress daily.</p>
   </div>
 
-  <!-- STUDY PLAN -->
   <div id="plan" class="card" style="display:none;">
     <h2>AI Study Plan</h2>
 
     <input id="level" placeholder="Your level">
     <input id="topics" placeholder="Topics">
-    <textarea id="questions" placeholder="Weaknesses"></textarea>
+    <textarea id="questions" placeholder="Struggles"></textarea>
 
-    <button class="main-btn" onclick="generatePlan()">Generate Plan</button>
+    <button onclick="generatePlan()">Generate</button>
     <pre id="planOutput"></pre>
   </div>
 
-  <!-- WORKSPACE -->
   <div id="workspace" class="card" style="display:none;">
-    <h2>Brainstorm Workspace</h2>
+    <h2>Brainstorm</h2>
 
-    <textarea id="notes" placeholder="Your ideas..."></textarea>
-    <button class="main-btn" onclick="expandIdea()">✨ Expand with AI</button>
+    <textarea id="notes" placeholder="Write ideas..."></textarea>
+    <button onclick="expandIdea()">Expand Idea</button>
   </div>
 
-  <!-- QUIZ -->
   <div id="quiz" class="card" style="display:none;">
-    <h2>AI Quiz</h2>
+    <h2>Quiz</h2>
 
     <input id="quizTopic" placeholder="Topic">
-    <button class="main-btn" onclick="generateQuiz()">Generate Quiz</button>
+    <button onclick="generateQuiz()">Generate Quiz</button>
 
     <pre id="quizOutput"></pre>
   </div>
@@ -139,25 +146,12 @@ button.main-btn {
 
 <script>
 // NAVIGATION
-function show(section){
+function show(id){
   document.querySelectorAll('.card').forEach(c=>c.style.display='none');
-  document.getElementById(section).style.display='block';
+  document.getElementById(id).style.display='block';
 }
 
-// STREAK SYSTEM
-let streak = localStorage.getItem("streak") || 1;
-document.getElementById("streak").innerText = streak;
-
-function completeTask(){
-  streak++;
-  localStorage.setItem("streak", streak);
-  document.getElementById("streak").innerText = streak;
-
-  let progress = Math.min(streak * 10, 100);
-  document.getElementById("progress").style.width = progress + "%";
-}
-
-// NOTES SAVE
+// SAVE NOTES
 const notes = document.getElementById("notes");
 notes.value = localStorage.getItem("notes") || "";
 
@@ -165,7 +159,7 @@ notes.addEventListener("input", ()=>{
   localStorage.setItem("notes", notes.value);
 });
 
-// AI CALLS
+// AI FUNCTIONS
 async function generatePlan(){
   const res = await fetch('/api/generate',{
     method:'POST',
@@ -203,7 +197,7 @@ async function generateQuiz(){
     body: JSON.stringify({
       level:"general",
       topics: document.getElementById("quizTopic").value,
-      questions:"Create a quiz with answers"
+      questions:"Create quiz with answers"
     })
   });
 
