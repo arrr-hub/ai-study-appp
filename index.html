@@ -2,207 +2,161 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>StudyOS</title>
-
-<link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;600&display=swap" rel="stylesheet">
+<title>StudyLingo</title>
 
 <style>
 body {
+  font-family: Arial, sans-serif;
+  background: #58cc02;
   margin:0;
-  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-  background: #f5f5f7;
-  display:flex;
-}
-
-/* Sidebar */
-.sidebar {
-  width:220px;
-  height:100vh;
-  background:#ffffff;
-  border-right:1px solid #eee;
-  padding:20px;
-}
-
-.sidebar h2 {
-  font-weight:600;
-}
-
-.nav {
-  margin-top:20px;
-}
-
-.nav div {
-  padding:10px;
-  border-radius:10px;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-.nav div:hover {
-  background:#f2f2f2;
-}
-
-/* Main */
-.main {
-  flex:1;
-  padding:40px;
-}
-
-/* Cards */
-.card {
-  background:white;
-  border-radius:20px;
-  padding:25px;
-  margin-bottom:20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-  transition:0.2s;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-}
-
-/* Inputs */
-input, textarea {
-  width:100%;
-  padding:12px;
-  margin-top:10px;
-  border-radius:12px;
-  border:1px solid #ddd;
-}
-
-/* Buttons */
-button {
-  margin-top:15px;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#0071e3;
   color:white;
+  text-align:center;
+}
+
+/* HEADER */
+.header {
+  padding:20px;
+  font-size:24px;
+  font-weight:bold;
+}
+
+/* STATS */
+.stats {
+  display:flex;
+  justify-content:space-around;
+  margin-bottom:20px;
+}
+
+.stat {
+  background:#46a302;
+  padding:10px 20px;
+  border-radius:20px;
+}
+
+/* PATH */
+.path {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:20px;
+}
+
+/* LESSON BUTTONS */
+.lesson {
+  width:80px;
+  height:80px;
+  border-radius:50%;
+  background:#89e219;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
   cursor:pointer;
-  transition:0.2s;
+  box-shadow:0 5px 0 #4caf00;
+  transition:0.1s;
 }
 
-button:hover {
-  opacity:0.9;
+.lesson:hover {
+  transform: translateY(-3px);
 }
 
-/* Output */
-pre {
-  margin-top:15px;
-  white-space: pre-wrap;
+.lesson.locked {
+  background:#ccc;
+  box-shadow:none;
+  cursor:not-allowed;
+}
+
+/* QUIZ POPUP */
+.popup {
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:white;
+  color:black;
+  padding:20px;
+  border-top-left-radius:20px;
+  border-top-right-radius:20px;
+  display:none;
+}
+
+button {
+  padding:10px;
+  border:none;
+  border-radius:10px;
+  background:#58cc02;
+  color:white;
+  margin-top:10px;
+  cursor:pointer;
 }
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-  <h2>StudyOS</h2>
+<div class="header">📚 StudyLingo</div>
 
-  <div class="nav">
-    <div onclick="show('dashboard')">Dashboard</div>
-    <div onclick="show('plan')">Study Plan</div>
-    <div onclick="show('workspace')">Brainstorm</div>
-    <div onclick="show('quiz')">Quiz</div>
-  </div>
+<div class="stats">
+  <div class="stat">🔥 <span id="streak">1</span></div>
+  <div class="stat">⭐ <span id="xp">0</span> XP</div>
 </div>
 
-<div class="main">
+<div class="path">
+  <div class="lesson" onclick="startLesson('Math')">➕</div>
+  <div class="lesson locked">🔒</div>
+  <div class="lesson locked">🔒</div>
+</div>
 
-  <div id="dashboard" class="card">
-    <h2>Welcome back</h2>
-    <p>Stay consistent. Small progress daily.</p>
-  </div>
-
-  <div id="plan" class="card" style="display:none;">
-    <h2>AI Study Plan</h2>
-
-    <input id="level" placeholder="Your level">
-    <input id="topics" placeholder="Topics">
-    <textarea id="questions" placeholder="Struggles"></textarea>
-
-    <button onclick="generatePlan()">Generate</button>
-    <pre id="planOutput"></pre>
-  </div>
-
-  <div id="workspace" class="card" style="display:none;">
-    <h2>Brainstorm</h2>
-
-    <textarea id="notes" placeholder="Write ideas..."></textarea>
-    <button onclick="expandIdea()">Expand Idea</button>
-  </div>
-
-  <div id="quiz" class="card" style="display:none;">
-    <h2>Quiz</h2>
-
-    <input id="quizTopic" placeholder="Topic">
-    <button onclick="generateQuiz()">Generate Quiz</button>
-
-    <pre id="quizOutput"></pre>
-  </div>
-
+<!-- POPUP -->
+<div class="popup" id="popup">
+  <h3 id="question">Loading...</h3>
+  <input id="answer" placeholder="Your answer">
+  <button onclick="submitAnswer()">Submit</button>
 </div>
 
 <script>
-// NAVIGATION
-function show(id){
-  document.querySelectorAll('.card').forEach(c=>c.style.display='none');
-  document.getElementById(id).style.display='block';
-}
+let xp = localStorage.getItem("xp") || 0;
+let streak = localStorage.getItem("streak") || 1;
 
-// SAVE NOTES
-const notes = document.getElementById("notes");
-notes.value = localStorage.getItem("notes") || "";
+document.getElementById("xp").innerText = xp;
+document.getElementById("streak").innerText = streak;
 
-notes.addEventListener("input", ()=>{
-  localStorage.setItem("notes", notes.value);
-});
+let correctAnswer = "";
 
-// AI FUNCTIONS
-async function generatePlan(){
+// START LESSON
+async function startLesson(subject){
+  document.getElementById("popup").style.display = "block";
+
   const res = await fetch('/api/generate',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({
-      level: level.value,
-      topics: topics.value,
-      questions: questions.value
+      level:"student",
+      topics: subject,
+      questions:"Create ONE simple quiz question with answer"
     })
   });
 
   const data = await res.json();
-  document.getElementById("planOutput").innerText = data.plan || data.error;
+
+  document.getElementById("question").innerText = data.plan;
+
+  // (simple hack: answer not extracted yet)
+  correctAnswer = ""; 
 }
 
-async function expandIdea(){
-  const res = await fetch('/api/generate',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      level:"general",
-      topics: notes.value,
-      questions:"Expand this into structured notes"
-    })
-  });
+// SUBMIT
+function submitAnswer(){
+  xp = parseInt(xp) + 10;
+  streak = parseInt(streak) + 1;
 
-  const data = await res.json();
-  notes.value = data.plan;
-}
+  localStorage.setItem("xp", xp);
+  localStorage.setItem("streak", streak);
 
-async function generateQuiz(){
-  const res = await fetch('/api/generate',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      level:"general",
-      topics: document.getElementById("quizTopic").value,
-      questions:"Create quiz with answers"
-    })
-  });
+  document.getElementById("xp").innerText = xp;
+  document.getElementById("streak").innerText = streak;
 
-  const data = await res.json();
-  document.getElementById("quizOutput").innerText = data.plan;
+  document.getElementById("popup").style.display = "none";
 }
 </script>
 
